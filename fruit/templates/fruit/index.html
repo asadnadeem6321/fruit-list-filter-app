@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fruit List</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f4f6f9;
+      color: #2c3e50;
+      min-height: 100vh;
+    }
+
+    .app-container { max-width: 860px; margin: 0 auto; padding: 2rem 1rem; }
+
+    .app-header { text-align: center; margin-bottom: 2rem; }
+    .app-header h1 { font-size: 2.4rem; font-weight: 700; color: #1a252f; }
+    .subtitle { color: #7f8c8d; margin-top: 0.4rem; font-size: 1rem; }
+
+    /* Filter Bar */
+    .filter-bar {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+      margin-bottom: 1.5rem;
+    }
+    .filter-title {
+      font-size: 0.85rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.05em; color: #95a5a6; margin-bottom: 1rem;
+    }
+    .filter-controls { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end; }
+    .filter-group { display: flex; flex-direction: column; gap: 0.3rem; flex: 1 1 180px; }
+    .filter-group label { font-size: 0.85rem; font-weight: 600; color: #555; }
+    .filter-group input,
+    .filter-group select {
+      padding: 0.55rem 0.75rem;
+      border: 1.5px solid #dce3ea;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      background: #fff;
+      color: #2c3e50;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .filter-group input:focus,
+    .filter-group select:focus { border-color: #3498db; }
+
+    #clear-btn {
+      padding: 0.55rem 1.2rem;
+      background: #e74c3c;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      align-self: flex-end;
+      transition: background 0.2s;
+      display: none;
+    }
+    #clear-btn:hover { background: #c0392b; }
+
+    /* Status */
+    .status-msg { text-align: center; padding: 2rem; color: #7f8c8d; }
+    .status-msg.error { color: #e74c3c; }
+    .result-count { font-size: 0.9rem; color: #7f8c8d; margin-bottom: 0.75rem; }
+    .empty-state { text-align: center; padding: 3rem; color: #bdc3c7; font-size: 1.1rem; }
+
+    /* Fruit List */
+    .fruit-list { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; }
+    .fruit-item {
+      display: flex; align-items: center; gap: 1rem;
+      background: #fff; border-radius: 10px; padding: 1rem 1.25rem;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .fruit-item:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,0.1); }
+    .color-dot {
+      width: 18px; height: 18px; border-radius: 50%;
+      flex-shrink: 0; border: 2px solid rgba(0,0,0,0.1);
+    }
+    .fruit-name { font-weight: 600; font-size: 1.05rem; flex: 1; }
+    .fruit-color { font-size: 0.85rem; color: #7f8c8d; text-transform: capitalize; min-width: 70px; }
+    .season-badge {
+      font-size: 0.82rem; font-weight: 600;
+      padding: 0.3rem 0.7rem; border-radius: 20px; white-space: nowrap;
+    }
+    .in-season    { background: #eafaf1; color: #27ae60; }
+    .out-of-season { background: #fdf3f3; color: #c0392b; }
+
+    @media (max-width: 600px) {
+      .fruit-item { flex-wrap: wrap; }
+      .fruit-color { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <header class="app-header">
+      <h1>🍎 Fruit List</h1>
+      <p class="subtitle">Browse, search, and filter your favourite fruits</p>
+    </header>
+
+    <main>
+      <!-- Filter Bar -->
+      <section class="filter-bar" aria-label="Fruit filters">
+        <p class="filter-title">Filters</p>
+        <div class="filter-controls">
+
+          <div class="filter-group">
+            <label for="name-filter">Name</label>
+            <input
+              id="name-filter"
+              type="text"
+              placeholder="e.g. app"
+              aria-label="Filter by name"
+            />
+          </div>
+
+          <div class="filter-group">
+            <label for="color-filter">Color</label>
+            <select id="color-filter" aria-label="Filter by color">
+              <option value="">All colors</option>
+              <option value="red">Red</option>
+              <option value="yellow">Yellow</option>
+              <option value="green">Green</option>
+              <option value="orange">Orange</option>
+              <option value="purple">Purple</option>
+              <option value="blue">Blue</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label for="season-filter">In Season</label>
+            <select id="season-filter" aria-label="Filter by season">
+              <option value="">All</option>
+              <option value="true">In Season</option>
+              <option value="false">Out of Season</option>
+            </select>
+          </div>
+
+          <button id="clear-btn" aria-label="Clear all filters">Clear Filters</button>
+        </div>
+      </section>
+
+      <!-- Fruit Results -->
+      <div id="result-container"></div>
+    </main>
+  </div>
+
+  <script>
+    const COLOR_MAP = {
+      red: "#e74c3c", yellow: "#f1c40f", green: "#2ecc71",
+      orange: "#e67e22", purple: "#9b59b6", blue: "#3498db",
+    };
+
+    const nameInput    = document.getElementById("name-filter");
+    const colorSelect  = document.getElementById("color-filter");
+    const seasonSelect = document.getElementById("season-filter");
+    const clearBtn     = document.getElementById("clear-btn");
+    const container    = document.getElementById("result-container");
+
+    // ── 1. Read initial state from the URL querystring ──
+    function readParams() {
+      const p = new URLSearchParams(window.location.search);
+      return {
+        name:     p.get("name")      || "",
+        color:    p.get("color")     || "",
+        inSeason: p.get("in_season") || "",
+      };
+    }
+
+    // ── 2. Apply filter values to the input elements ──
+    function applyFiltersToInputs({ name, color, inSeason }) {
+      nameInput.value    = name;
+      colorSelect.value  = color;
+      seasonSelect.value = inSeason;
+      clearBtn.style.display = (name || color || inSeason) ? "inline-block" : "none";
+    }
+
+    // ── 3. Push current filters into the URL (no page reload) ──
+    function updateURL({ name, color, inSeason }) {
+      const p = new URLSearchParams();
+      if (name)     p.set("name", name);
+      if (color)    p.set("color", color);
+      if (inSeason) p.set("in_season", inSeason);
+      const qs = p.toString();
+      history.pushState({}, "", qs ? `?${qs}` : window.location.pathname);
+    }
+
+    // ── 4. Fetch from Django API and render ──
+    async function fetchAndRender(filters) {
+      container.innerHTML = `<p class="status-msg">Loading fruits...</p>`;
+
+      const p = new URLSearchParams();
+      if (filters.name)     p.set("name", filters.name);
+      if (filters.color)    p.set("color", filters.color);
+      if (filters.inSeason) p.set("in_season", filters.inSeason);
+      const qs = p.toString();
+      const url = `/fruit${qs ? `?${qs}` : ""}`;
+
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`Server error: ${res.status}`);
+        const fruits = await res.json();
+        renderFruits(fruits);
+      } catch (err) {
+        container.innerHTML = `<p class="status-msg error">Error: ${err.message}</p>`;
+      }
+    }
+
+    // ── 5. Render the fruit list ──
+    function renderFruits(fruits) {
+      if (fruits.length === 0) {
+        container.innerHTML = `<p class="empty-state">No fruits match the current filters.</p>`;
+        return;
+      }
+
+      const count = `<p class="result-count">${fruits.length} fruit${fruits.length !== 1 ? "s" : ""} found</p>`;
+      const items = fruits.map(f => {
+        const dot = COLOR_MAP[f.color.toLowerCase()] || "#888";
+        const badge = f.in_season
+          ? `<span class="season-badge in-season">✅ In Season</span>`
+          : `<span class="season-badge out-of-season">❌ Out of Season</span>`;
+        return `
+          <li class="fruit-item">
+            <span class="color-dot" style="background:${dot}" title="${f.color}"></span>
+            <span class="fruit-name">${f.name}</span>
+            <span class="fruit-color">${f.color}</span>
+            ${badge}
+          </li>`;
+      }).join("");
+
+      container.innerHTML = `${count}<ul class="fruit-list">${items}</ul>`;
+    }
+
+    // ── 6. Handle filter input changes ──
+    function onFilterChange() {
+      const filters = {
+        name:     nameInput.value.trim(),
+        color:    colorSelect.value,
+        inSeason: seasonSelect.value,
+      };
+      clearBtn.style.display = (filters.name || filters.color || filters.inSeason)
+        ? "inline-block" : "none";
+      updateURL(filters);
+      fetchAndRender(filters);
+    }
+
+    // ── 7. Clear all filters ──
+    clearBtn.addEventListener("click", () => {
+      const filters = { name: "", color: "", inSeason: "" };
+      applyFiltersToInputs(filters);
+      updateURL(filters);
+      fetchAndRender(filters);
+    });
+
+    // ── 8. Listen for back/forward navigation ──
+    window.addEventListener("popstate", () => {
+      const filters = readParams();
+      applyFiltersToInputs(filters);
+      fetchAndRender(filters);
+    });
+
+    nameInput.addEventListener("input", onFilterChange);
+    colorSelect.addEventListener("change", onFilterChange);
+    seasonSelect.addEventListener("change", onFilterChange);
+
+    // ── 9. Initial load — read URL params and fetch ──
+    (function init() {
+      const filters = readParams();
+      applyFiltersToInputs(filters);
+      fetchAndRender(filters);
+    })();
+  </script>
+</body>
+</html>

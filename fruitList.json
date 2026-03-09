@@ -1,0 +1,22 @@
+[
+  { "id": 1,  "name": "Apple",      "color": "red",    "in_season": true  },
+  { "id": 2,  "name": "Banana",     "color": "yellow", "in_season": true  },
+  { "id": 3,  "name": "Blueberry",  "color": "blue",   "in_season": false },
+  { "id": 4,  "name": "Cherry",     "color": "red",    "in_season": true  },
+  { "id": 5,  "name": "Grape",      "color": "purple", "in_season": false },
+  { "id": 6,  "name": "Kiwi",       "color": "green",  "in_season": true  },
+  { "id": 7,  "name": "Lemon",      "color": "yellow", "in_season": true  },
+  { "id": 8,  "name": "Lime",       "color": "green",  "in_season": true  },
+  { "id": 9,  "name": "Mango",      "color": "orange", "in_season": true  },
+  { "id": 10, "name": "Orange",     "color": "orange", "in_season": true  },
+  { "id": 11, "name": "Peach",      "color": "orange", "in_season": false },
+  { "id": 12, "name": "Pear",       "color": "green",  "in_season": false },
+  { "id": 13, "name": "Pineapple",  "color": "yellow", "in_season": true  },
+  { "id": 14, "name": "Plum",       "color": "purple", "in_season": false },
+  { "id": 15, "name": "Raspberry",  "color": "red",    "in_season": false },
+  { "id": 16, "name": "Strawberry", "color": "red",    "in_season": true  },
+  { "id": 17, "name": "Watermelon", "color": "green",  "in_season": false },
+  { "id": 18, "name": "Apricot",    "color": "orange", "in_season": false },
+  { "id": 19, "name": "Blackberry", "color": "purple", "in_season": true  },
+  { "id": 20, "name": "Cantaloupe", "color": "orange", "in_season": false }
+]
