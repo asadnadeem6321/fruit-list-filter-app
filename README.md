@@ -149,7 +149,7 @@ fruit-list-filter-app/
 
 ## How to Run
 
-> **Requirements**: Python 3.10 or later. No Node.js needed.
+> **Requirements**: Python 3.10 or later.
 
 ### Step 1 — Clone / navigate to the project
 
