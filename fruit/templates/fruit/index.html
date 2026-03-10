@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Fruit List</title>
 
-  <!-- jQuery (CDN) — used for AJAX calls and DOM interaction -->
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
   <style>
@@ -20,7 +19,6 @@
 
     .app-container { max-width: 900px; margin: 0 auto; padding: 2.5rem 1rem; }
 
-    /* ── Header ── */
     .app-header { text-align: center; margin-bottom: 2rem; }
     .app-header h1 {
       font-size: 2.6rem; font-weight: 800; color: #1a252f;
@@ -28,7 +26,6 @@
     }
     .subtitle { color: #7f8c8d; margin-top: 0.4rem; font-size: 1rem; }
 
-    /* ── Stats bar ── */
     .stats-bar {
       display: flex; justify-content: center; gap: 1.5rem;
       margin-top: 1rem; flex-wrap: wrap;
@@ -41,7 +38,6 @@
     }
     .stat-chip span { font-weight: 800; color: #2c3e50; }
 
-    /* ── Filter Bar ── */
     .filter-bar {
       background: #fff;
       border-radius: 14px;
@@ -85,7 +81,6 @@
     #clear-btn:hover { background: #c0392b; }
     #clear-btn:active { transform: scale(0.97); }
 
-    /* ── Active filter tags ── */
     #active-filters {
       display: flex; flex-wrap: wrap; gap: 0.5rem;
       margin-top: 0.9rem; min-height: 0;
@@ -104,7 +99,6 @@
     .filter-tag .remove-tag:hover { opacity: 1; }
     @keyframes fadeInTag { from { opacity:0; transform:scale(0.85); } to { opacity:1; transform:scale(1); } }
 
-    /* ── Spinner ── */
     .spinner-wrap { display: flex; justify-content: center; padding: 3rem 0; }
     .spinner {
       width: 38px; height: 38px;
@@ -115,7 +109,6 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ── Status ── */
     .error-msg {
       text-align: center; padding: 2rem;
       color: #e74c3c; background: #fdf3f3;
@@ -127,7 +120,6 @@
     }
     .empty-state .empty-icon { font-size: 3rem; display: block; margin-bottom: 0.75rem; }
 
-    /* ── Result meta ── */
     .result-meta {
       display: flex; justify-content: space-between; align-items: center;
       margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;
@@ -139,7 +131,6 @@
     }
     .ajax-indicator.visible { opacity: 1; }
 
-    /* ── Fruit List ── */
     .fruit-list { list-style: none; display: flex; flex-direction: column; gap: 0.55rem; }
 
     .fruit-item {
@@ -194,7 +185,6 @@
     </header>
 
     <main>
-      <!-- Filter Bar -->
       <section class="filter-bar" aria-label="Fruit filters">
         <p class="filter-title">Filters</p>
         <div class="filter-controls">
@@ -230,17 +220,14 @@
           <button id="clear-btn" aria-label="Clear all filters">✕ Clear</button>
         </div>
 
-        <!-- Active filter tags -->
         <div id="active-filters"></div>
       </section>
 
-      <!-- Result meta row -->
       <div class="result-meta" id="result-meta" style="display:none;">
         <p class="result-count" id="result-count"></p>
         <p class="ajax-indicator" id="ajax-indicator">⟳ Fetching...</p>
       </div>
 
-      <!-- Fruit Results -->
       <div id="result-container"></div>
     </main>
 
@@ -252,10 +239,9 @@
       orange: "#e67e22", purple: "#9b59b6", blue: "#3498db",
     };
 
-    let activeXHR = null;   // track in-flight AJAX request so we can abort it
+    let activeXHR = null;  
     let debounceTimer = null;
 
-    // ── Helpers ──────────────────────────────────────────────────────────────
 
     function readParams() {
       const p = new URLSearchParams(window.location.search);
@@ -291,8 +277,6 @@
       history.pushState({}, "", qs ? "?" + qs : window.location.pathname);
     }
 
-    // ── Active filter tags ────────────────────────────────────────────────────
-
     function renderActiveTags(name, color, inSeason) {
       const $wrap = $("#active-filters").empty();
       if (name) {
@@ -321,8 +305,6 @@
       return $tag;
     }
 
-    // ── Stats bar update ──────────────────────────────────────────────────────
-
     function updateStats(fruits) {
       const total = fruits.length;
       const inS   = fruits.filter(function (f) { return f.in_season; }).length;
@@ -332,10 +314,7 @@
       $("#stat-out").text(outS);
     }
 
-    // ── AJAX fetch ────────────────────────────────────────────────────────────
-
     function fetchAndRender(filters) {
-      // abort any previous in-flight request
       if (activeXHR) { activeXHR.abort(); }
 
       const params = {};
@@ -343,7 +322,6 @@
       if (filters.color)    params.color     = filters.color;
       if (filters.inSeason) params.in_season = filters.inSeason;
 
-      // show spinner + ajax indicator
       $("#result-container").html(
         '<div class="spinner-wrap"><div class="spinner"></div></div>'
       );
@@ -365,7 +343,7 @@
         },
 
         error: function (xhr, status) {
-          if (status === "abort") return;   // user typed again — silently ignore
+          if (status === "abort") return;   
           $("#result-container").html(
             '<div class="error-msg">⚠️ Could not load fruits. Is the server running?</div>'
           );
@@ -378,8 +356,6 @@
         }
       });
     }
-
-    // ── Render results ────────────────────────────────────────────────────────
 
     function renderFruits(fruits) {
       if (fruits.length === 0) {
@@ -410,7 +386,6 @@
         );
         $item.find(".color-dot").css("background", dot);
 
-        // staggered fade-in animation via jQuery
         $item.css({ opacity: 0 }).appendTo($list);
         setTimeout(function () {
           $item.animate({ opacity: 1 }, 120);
@@ -419,8 +394,6 @@
 
       $("#result-container").empty().append($list);
     }
-
-    // ── Filter change handler ─────────────────────────────────────────────────
 
     function onFilterChange() {
       const filters = {
@@ -434,20 +407,14 @@
       fetchAndRender(filters);
     }
 
-    // ── Wire up events (jQuery) ───────────────────────────────────────────────
-
     $(function () {
-
-      // debounce typing in name input — waits 300 ms after user stops typing
       $("#name-filter").on("input", function () {
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(onFilterChange, 300);
       });
 
-      // instant response for selects
       $("#color-filter, #season-filter").on("change", onFilterChange);
 
-      // clear all filters
       $("#clear-btn").on("click", function () {
         const empty = { name: "", color: "", inSeason: "" };
         applyFiltersToInputs(empty);
@@ -455,14 +422,12 @@
         fetchAndRender(empty);
       });
 
-      // browser back / forward restores filters
       $(window).on("popstate", function () {
         const filters = readParams();
         applyFiltersToInputs(filters);
         fetchAndRender(filters);
       });
 
-      // initial load — read URL params if any
       const initial = readParams();
       applyFiltersToInputs(initial);
       fetchAndRender(initial);

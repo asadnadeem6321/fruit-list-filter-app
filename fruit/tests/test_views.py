@@ -1,4 +1,3 @@
-import json
 import pytest
 from django.test import Client
 from fruit.views import FRUIT_LIST
