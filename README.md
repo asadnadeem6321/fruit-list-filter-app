@@ -121,7 +121,7 @@ DOM rendering of k result cards is O(k). Filter tag rendering is O(number of act
 ## Project Structure
 
 ```
-Test Project/
+fruit-list-filter-app/
 ├── manage.py                   ← Django management entry point
 ├── requirements.txt            ← Python dependencies
 ├── pytest.ini                  ← pytest + Django settings pointer
@@ -154,7 +154,7 @@ Test Project/
 ### Step 1 — Clone / navigate to the project
 
 ```bash
-cd "/Users/macbookpro/Downloads/Test Project"
+cd "/Users/macbookpro/Downloads/fruit-list-filter-app"
 ```
 
 ### Step 2 — Create and activate a virtual environment
@@ -228,7 +228,7 @@ Each fruit object in the response has the shape:
 Make sure the virtual environment is activated, then run:
 
 ```bash
-cd "/Users/macbookpro/Downloads/Test Project"
+cd "/Users/macbookpro/Downloads/fruit-list-filter-app"
 source venv/bin/activate
 pytest -v
 ```
