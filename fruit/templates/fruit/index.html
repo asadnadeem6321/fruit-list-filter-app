@@ -4,90 +4,171 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Fruit List</title>
+
+  <!-- jQuery (CDN) — used for AJAX calls and DOM interaction -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: #f4f6f9;
+      background: linear-gradient(135deg, #f4f6f9 0%, #e8edf3 100%);
       color: #2c3e50;
       min-height: 100vh;
     }
 
-    .app-container { max-width: 860px; margin: 0 auto; padding: 2rem 1rem; }
+    .app-container { max-width: 900px; margin: 0 auto; padding: 2.5rem 1rem; }
 
+    /* ── Header ── */
     .app-header { text-align: center; margin-bottom: 2rem; }
-    .app-header h1 { font-size: 2.4rem; font-weight: 700; color: #1a252f; }
+    .app-header h1 {
+      font-size: 2.6rem; font-weight: 800; color: #1a252f;
+      letter-spacing: -0.5px;
+    }
     .subtitle { color: #7f8c8d; margin-top: 0.4rem; font-size: 1rem; }
 
-    /* Filter Bar */
+    /* ── Stats bar ── */
+    .stats-bar {
+      display: flex; justify-content: center; gap: 1.5rem;
+      margin-top: 1rem; flex-wrap: wrap;
+    }
+    .stat-chip {
+      background: #fff; border-radius: 20px; padding: 0.3rem 0.9rem;
+      font-size: 0.82rem; font-weight: 600; color: #555;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      display: flex; align-items: center; gap: 0.4rem;
+    }
+    .stat-chip span { font-weight: 800; color: #2c3e50; }
+
+    /* ── Filter Bar ── */
     .filter-bar {
       background: #fff;
-      border-radius: 12px;
+      border-radius: 14px;
       padding: 1.5rem;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.07);
-      margin-bottom: 1.5rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      margin-bottom: 1rem;
     }
     .filter-title {
-      font-size: 0.85rem; font-weight: 600; text-transform: uppercase;
-      letter-spacing: 0.05em; color: #95a5a6; margin-bottom: 1rem;
+      font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.07em; color: #95a5a6; margin-bottom: 1rem;
     }
     .filter-controls { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end; }
-    .filter-group { display: flex; flex-direction: column; gap: 0.3rem; flex: 1 1 180px; }
-    .filter-group label { font-size: 0.85rem; font-weight: 600; color: #555; }
+    .filter-group { display: flex; flex-direction: column; gap: 0.3rem; flex: 1 1 170px; }
+    .filter-group label { font-size: 0.82rem; font-weight: 700; color: #444; }
+
     .filter-group input,
     .filter-group select {
-      padding: 0.55rem 0.75rem;
+      padding: 0.6rem 0.8rem;
       border: 1.5px solid #dce3ea;
       border-radius: 8px;
       font-size: 0.95rem;
       background: #fff;
       color: #2c3e50;
       outline: none;
-      transition: border-color 0.2s;
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
     .filter-group input:focus,
-    .filter-group select:focus { border-color: #3498db; }
+    .filter-group select:focus {
+      border-color: #3498db;
+      box-shadow: 0 0 0 3px rgba(52,152,219,0.12);
+    }
 
     #clear-btn {
-      padding: 0.55rem 1.2rem;
+      padding: 0.6rem 1.3rem;
       background: #e74c3c;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      cursor: pointer;
-      align-self: flex-end;
-      transition: background 0.2s;
+      color: #fff; border: none; border-radius: 8px;
+      font-size: 0.88rem; font-weight: 700; cursor: pointer;
+      align-self: flex-end; transition: background 0.2s, transform 0.1s;
       display: none;
     }
     #clear-btn:hover { background: #c0392b; }
+    #clear-btn:active { transform: scale(0.97); }
 
-    /* Status */
-    .status-msg { text-align: center; padding: 2rem; color: #7f8c8d; }
-    .status-msg.error { color: #e74c3c; }
-    .result-count { font-size: 0.9rem; color: #7f8c8d; margin-bottom: 0.75rem; }
-    .empty-state { text-align: center; padding: 3rem; color: #bdc3c7; font-size: 1.1rem; }
+    /* ── Active filter tags ── */
+    #active-filters {
+      display: flex; flex-wrap: wrap; gap: 0.5rem;
+      margin-top: 0.9rem; min-height: 0;
+    }
+    .filter-tag {
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      background: #eaf4fd; color: #2980b9;
+      border-radius: 20px; padding: 0.25rem 0.75rem;
+      font-size: 0.78rem; font-weight: 600;
+      animation: fadeInTag 0.2s ease;
+    }
+    .filter-tag .remove-tag {
+      cursor: pointer; font-size: 0.85rem; color: #2980b9;
+      line-height: 1; opacity: 0.7;
+    }
+    .filter-tag .remove-tag:hover { opacity: 1; }
+    @keyframes fadeInTag { from { opacity:0; transform:scale(0.85); } to { opacity:1; transform:scale(1); } }
 
-    /* Fruit List */
-    .fruit-list { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; }
+    /* ── Spinner ── */
+    .spinner-wrap { display: flex; justify-content: center; padding: 3rem 0; }
+    .spinner {
+      width: 38px; height: 38px;
+      border: 4px solid #dce3ea;
+      border-top-color: #3498db;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Status ── */
+    .error-msg {
+      text-align: center; padding: 2rem;
+      color: #e74c3c; background: #fdf3f3;
+      border-radius: 10px; font-weight: 600;
+    }
+    .empty-state {
+      text-align: center; padding: 3.5rem 1rem;
+      color: #bdc3c7; font-size: 1.1rem;
+    }
+    .empty-state .empty-icon { font-size: 3rem; display: block; margin-bottom: 0.75rem; }
+
+    /* ── Result meta ── */
+    .result-meta {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;
+    }
+    .result-count { font-size: 0.88rem; color: #7f8c8d; font-weight: 600; }
+    .ajax-indicator {
+      font-size: 0.75rem; color: #3498db; font-weight: 600;
+      opacity: 0; transition: opacity 0.2s;
+    }
+    .ajax-indicator.visible { opacity: 1; }
+
+    /* ── Fruit List ── */
+    .fruit-list { list-style: none; display: flex; flex-direction: column; gap: 0.55rem; }
+
     .fruit-item {
       display: flex; align-items: center; gap: 1rem;
-      background: #fff; border-radius: 10px; padding: 1rem 1.25rem;
-      box-shadow: 0 1px 6px rgba(0,0,0,0.06);
-      transition: transform 0.15s, box-shadow 0.15s;
+      background: #fff; border-radius: 12px; padding: 1rem 1.25rem;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.06);
+      transition: transform 0.15s, box-shadow 0.15s, opacity 0.2s;
+      cursor: default;
     }
-    .fruit-item:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,0.1); }
+    .fruit-item:hover {
+      transform: translateX(4px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+    }
+
     .color-dot {
-      width: 18px; height: 18px; border-radius: 50%;
-      flex-shrink: 0; border: 2px solid rgba(0,0,0,0.1);
+      width: 20px; height: 20px; border-radius: 50%;
+      flex-shrink: 0; border: 2px solid rgba(0,0,0,0.08);
+      transition: transform 0.2s;
     }
-    .fruit-name { font-weight: 600; font-size: 1.05rem; flex: 1; }
-    .fruit-color { font-size: 0.85rem; color: #7f8c8d; text-transform: capitalize; min-width: 70px; }
+    .fruit-item:hover .color-dot { transform: scale(1.25); }
+
+    .fruit-name { font-weight: 700; font-size: 1rem; flex: 1; }
+    .fruit-color {
+      font-size: 0.82rem; color: #95a5a6; text-transform: capitalize;
+      min-width: 65px; font-weight: 500;
+    }
     .season-badge {
-      font-size: 0.82rem; font-weight: 600;
-      padding: 0.3rem 0.7rem; border-radius: 20px; white-space: nowrap;
+      font-size: 0.78rem; font-weight: 700;
+      padding: 0.28rem 0.7rem; border-radius: 20px; white-space: nowrap;
     }
     .in-season    { background: #eafaf1; color: #27ae60; }
     .out-of-season { background: #fdf3f3; color: #c0392b; }
@@ -95,14 +176,21 @@
     @media (max-width: 600px) {
       .fruit-item { flex-wrap: wrap; }
       .fruit-color { display: none; }
+      .stats-bar { gap: 0.75rem; }
     }
   </style>
 </head>
 <body>
   <div class="app-container">
+
     <header class="app-header">
       <h1>🍎 Fruit List</h1>
       <p class="subtitle">Browse, search, and filter your favourite fruits</p>
+      <div class="stats-bar" id="stats-bar">
+        <div class="stat-chip">Total <span id="stat-total">—</span></div>
+        <div class="stat-chip">🟢 In Season <span id="stat-in">—</span></div>
+        <div class="stat-chip">🔴 Out of Season <span id="stat-out">—</span></div>
+      </div>
     </header>
 
     <main>
@@ -113,24 +201,20 @@
 
           <div class="filter-group">
             <label for="name-filter">Name</label>
-            <input
-              id="name-filter"
-              type="text"
-              placeholder="e.g. app"
-              aria-label="Filter by name"
-            />
+            <input id="name-filter" type="text"
+              placeholder="e.g. app" aria-label="Filter by name" autocomplete="off" />
           </div>
 
           <div class="filter-group">
             <label for="color-filter">Color</label>
             <select id="color-filter" aria-label="Filter by color">
               <option value="">All colors</option>
-              <option value="red">Red</option>
-              <option value="yellow">Yellow</option>
-              <option value="green">Green</option>
-              <option value="orange">Orange</option>
-              <option value="purple">Purple</option>
-              <option value="blue">Blue</option>
+              <option value="red">🔴 Red</option>
+              <option value="yellow">🟡 Yellow</option>
+              <option value="green">🟢 Green</option>
+              <option value="orange">🟠 Orange</option>
+              <option value="purple">🟣 Purple</option>
+              <option value="blue">🔵 Blue</option>
             </select>
           </div>
 
@@ -138,18 +222,28 @@
             <label for="season-filter">In Season</label>
             <select id="season-filter" aria-label="Filter by season">
               <option value="">All</option>
-              <option value="true">In Season</option>
-              <option value="false">Out of Season</option>
+              <option value="true">✅ In Season</option>
+              <option value="false">❌ Out of Season</option>
             </select>
           </div>
 
-          <button id="clear-btn" aria-label="Clear all filters">Clear Filters</button>
+          <button id="clear-btn" aria-label="Clear all filters">✕ Clear</button>
         </div>
+
+        <!-- Active filter tags -->
+        <div id="active-filters"></div>
       </section>
+
+      <!-- Result meta row -->
+      <div class="result-meta" id="result-meta" style="display:none;">
+        <p class="result-count" id="result-count"></p>
+        <p class="ajax-indicator" id="ajax-indicator">⟳ Fetching...</p>
+      </div>
 
       <!-- Fruit Results -->
       <div id="result-container"></div>
     </main>
+
   </div>
 
   <script>
@@ -158,13 +252,11 @@
       orange: "#e67e22", purple: "#9b59b6", blue: "#3498db",
     };
 
-    const nameInput    = document.getElementById("name-filter");
-    const colorSelect  = document.getElementById("color-filter");
-    const seasonSelect = document.getElementById("season-filter");
-    const clearBtn     = document.getElementById("clear-btn");
-    const container    = document.getElementById("result-container");
+    let activeXHR = null;   // track in-flight AJAX request so we can abort it
+    let debounceTimer = null;
 
-    // ── 1. Read initial state from the URL querystring ──
+    // ── Helpers ──────────────────────────────────────────────────────────────
+
     function readParams() {
       const p = new URLSearchParams(window.location.search);
       return {
@@ -174,108 +266,207 @@
       };
     }
 
-    // ── 2. Apply filter values to the input elements ──
     function applyFiltersToInputs({ name, color, inSeason }) {
-      nameInput.value    = name;
-      colorSelect.value  = color;
-      seasonSelect.value = inSeason;
-      clearBtn.style.display = (name || color || inSeason) ? "inline-block" : "none";
+      $("#name-filter").val(name);
+      $("#color-filter").val(color);
+      $("#season-filter").val(inSeason);
+      toggleClearBtn(name, color, inSeason);
+      renderActiveTags(name, color, inSeason);
     }
 
-    // ── 3. Push current filters into the URL (no page reload) ──
+    function toggleClearBtn(name, color, inSeason) {
+      if (name || color || inSeason) {
+        $("#clear-btn").fadeIn(150);
+      } else {
+        $("#clear-btn").fadeOut(150);
+      }
+    }
+
     function updateURL({ name, color, inSeason }) {
       const p = new URLSearchParams();
       if (name)     p.set("name", name);
       if (color)    p.set("color", color);
       if (inSeason) p.set("in_season", inSeason);
       const qs = p.toString();
-      history.pushState({}, "", qs ? `?${qs}` : window.location.pathname);
+      history.pushState({}, "", qs ? "?" + qs : window.location.pathname);
     }
 
-    // ── 4. Fetch from Django API and render ──
-    async function fetchAndRender(filters) {
-      container.innerHTML = `<p class="status-msg">Loading fruits...</p>`;
+    // ── Active filter tags ────────────────────────────────────────────────────
 
-      const p = new URLSearchParams();
-      if (filters.name)     p.set("name", filters.name);
-      if (filters.color)    p.set("color", filters.color);
-      if (filters.inSeason) p.set("in_season", filters.inSeason);
-      const qs = p.toString();
-      const url = `/fruit${qs ? `?${qs}` : ""}`;
-
-      try {
-        const res = await fetch(url);
-        if (!res.ok) throw new Error(`Server error: ${res.status}`);
-        const fruits = await res.json();
-        renderFruits(fruits);
-      } catch (err) {
-        container.innerHTML = `<p class="status-msg error">Error: ${err.message}</p>`;
+    function renderActiveTags(name, color, inSeason) {
+      const $wrap = $("#active-filters").empty();
+      if (name) {
+        $wrap.append(makeTag("Name: " + name, function () {
+          $("#name-filter").val("").trigger("input");
+        }));
+      }
+      if (color) {
+        $wrap.append(makeTag("Color: " + color, function () {
+          $("#color-filter").val("").trigger("change");
+        }));
+      }
+      if (inSeason !== "") {
+        const label = inSeason === "true" ? "In Season" : "Out of Season";
+        $wrap.append(makeTag(label, function () {
+          $("#season-filter").val("").trigger("change");
+        }));
       }
     }
 
-    // ── 5. Render the fruit list ──
+    function makeTag(text, onRemove) {
+      const $tag = $('<span class="filter-tag"></span>').text(text);
+      const $x   = $('<span class="remove-tag" title="Remove filter">✕</span>');
+      $x.on("click", onRemove);
+      $tag.append($x);
+      return $tag;
+    }
+
+    // ── Stats bar update ──────────────────────────────────────────────────────
+
+    function updateStats(fruits) {
+      const total = fruits.length;
+      const inS   = fruits.filter(function (f) { return f.in_season; }).length;
+      const outS  = total - inS;
+      $("#stat-total").text(total);
+      $("#stat-in").text(inS);
+      $("#stat-out").text(outS);
+    }
+
+    // ── AJAX fetch ────────────────────────────────────────────────────────────
+
+    function fetchAndRender(filters) {
+      // abort any previous in-flight request
+      if (activeXHR) { activeXHR.abort(); }
+
+      const params = {};
+      if (filters.name)     params.name      = filters.name;
+      if (filters.color)    params.color     = filters.color;
+      if (filters.inSeason) params.in_season = filters.inSeason;
+
+      // show spinner + ajax indicator
+      $("#result-container").html(
+        '<div class="spinner-wrap"><div class="spinner"></div></div>'
+      );
+      $("#result-meta").show();
+      $("#ajax-indicator").addClass("visible");
+
+      activeXHR = $.ajax({
+        url:      "/fruit",
+        method:   "GET",
+        data:     params,
+        dataType: "json",
+
+        success: function (fruits) {
+          updateStats(fruits);
+          renderFruits(fruits);
+          $("#result-count").text(
+            fruits.length + " fruit" + (fruits.length !== 1 ? "s" : "") + " found"
+          );
+        },
+
+        error: function (xhr, status) {
+          if (status === "abort") return;   // user typed again — silently ignore
+          $("#result-container").html(
+            '<div class="error-msg">⚠️ Could not load fruits. Is the server running?</div>'
+          );
+          $("#result-count").text("");
+        },
+
+        complete: function () {
+          $("#ajax-indicator").removeClass("visible");
+          activeXHR = null;
+        }
+      });
+    }
+
+    // ── Render results ────────────────────────────────────────────────────────
+
     function renderFruits(fruits) {
       if (fruits.length === 0) {
-        container.innerHTML = `<p class="empty-state">No fruits match the current filters.</p>`;
+        $("#result-container").html(
+          '<div class="empty-state">' +
+          '<span class="empty-icon">🔍</span>' +
+          'No fruits match the current filters.' +
+          '</div>'
+        );
         return;
       }
 
-      const count = `<p class="result-count">${fruits.length} fruit${fruits.length !== 1 ? "s" : ""} found</p>`;
-      const items = fruits.map(f => {
-        const dot = COLOR_MAP[f.color.toLowerCase()] || "#888";
-        const badge = f.in_season
-          ? `<span class="season-badge in-season">✅ In Season</span>`
-          : `<span class="season-badge out-of-season">❌ Out of Season</span>`;
-        return `
-          <li class="fruit-item">
-            <span class="color-dot" style="background:${dot}" title="${f.color}"></span>
-            <span class="fruit-name">${f.name}</span>
-            <span class="fruit-color">${f.color}</span>
-            ${badge}
-          </li>`;
-      }).join("");
+      const $list = $('<ul class="fruit-list"></ul>');
 
-      container.innerHTML = `${count}<ul class="fruit-list">${items}</ul>`;
+      $.each(fruits, function (i, f) {
+        const dot   = COLOR_MAP[f.color.toLowerCase()] || "#888";
+        const badge = f.in_season
+          ? '<span class="season-badge in-season">✅ In Season</span>'
+          : '<span class="season-badge out-of-season">❌ Out of Season</span>';
+
+        const $item = $(
+          '<li class="fruit-item">' +
+          '<span class="color-dot" title="' + f.color + '"></span>' +
+          '<span class="fruit-name">' + $('<span>').text(f.name).html() + '</span>' +
+          '<span class="fruit-color">' + $('<span>').text(f.color).html() + '</span>' +
+          badge +
+          '</li>'
+        );
+        $item.find(".color-dot").css("background", dot);
+
+        // staggered fade-in animation via jQuery
+        $item.css({ opacity: 0 }).appendTo($list);
+        setTimeout(function () {
+          $item.animate({ opacity: 1 }, 120);
+        }, i * 30);
+      });
+
+      $("#result-container").empty().append($list);
     }
 
-    // ── 6. Handle filter input changes ──
+    // ── Filter change handler ─────────────────────────────────────────────────
+
     function onFilterChange() {
       const filters = {
-        name:     nameInput.value.trim(),
-        color:    colorSelect.value,
-        inSeason: seasonSelect.value,
+        name:     $("#name-filter").val().trim(),
+        color:    $("#color-filter").val(),
+        inSeason: $("#season-filter").val(),
       };
-      clearBtn.style.display = (filters.name || filters.color || filters.inSeason)
-        ? "inline-block" : "none";
+      toggleClearBtn(filters.name, filters.color, filters.inSeason);
+      renderActiveTags(filters.name, filters.color, filters.inSeason);
       updateURL(filters);
       fetchAndRender(filters);
     }
 
-    // ── 7. Clear all filters ──
-    clearBtn.addEventListener("click", () => {
-      const filters = { name: "", color: "", inSeason: "" };
-      applyFiltersToInputs(filters);
-      updateURL(filters);
-      fetchAndRender(filters);
+    // ── Wire up events (jQuery) ───────────────────────────────────────────────
+
+    $(function () {
+
+      // debounce typing in name input — waits 300 ms after user stops typing
+      $("#name-filter").on("input", function () {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(onFilterChange, 300);
+      });
+
+      // instant response for selects
+      $("#color-filter, #season-filter").on("change", onFilterChange);
+
+      // clear all filters
+      $("#clear-btn").on("click", function () {
+        const empty = { name: "", color: "", inSeason: "" };
+        applyFiltersToInputs(empty);
+        updateURL(empty);
+        fetchAndRender(empty);
+      });
+
+      // browser back / forward restores filters
+      $(window).on("popstate", function () {
+        const filters = readParams();
+        applyFiltersToInputs(filters);
+        fetchAndRender(filters);
+      });
+
+      // initial load — read URL params if any
+      const initial = readParams();
+      applyFiltersToInputs(initial);
+      fetchAndRender(initial);
     });
-
-    // ── 8. Listen for back/forward navigation ──
-    window.addEventListener("popstate", () => {
-      const filters = readParams();
-      applyFiltersToInputs(filters);
-      fetchAndRender(filters);
-    });
-
-    nameInput.addEventListener("input", onFilterChange);
-    colorSelect.addEventListener("change", onFilterChange);
-    seasonSelect.addEventListener("change", onFilterChange);
-
-    // ── 9. Initial load — read URL params and fetch ──
-    (function init() {
-      const filters = readParams();
-      applyFiltersToInputs(filters);
-      fetchAndRender(filters);
-    })();
   </script>
 </body>
 </html>
